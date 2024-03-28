@@ -1,0 +1,132 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Inter", sans-serif;
+  }
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  
+  
+  :root {
+    --fixed-header-height: 4.5rem;
+  }
+
+
+  
+  .container {
+    width: 100%;
+  }
+  @media screen and (min-width: 1040px) {
+    .container {
+      width: 1040px;
+      margin: 0 auto;
+    }
+  }
+  .wrapper {
+    width: 100%;
+    padding-left: 1.7rem;
+    padding-right: 1.7rem;
+    padding-top: 5rem;
+    margin-bottom: 5rem;
+  }
+  .grid-cols-2 {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4rem;
+    justify-content: center;
+  }
+  .grid-item-1 {
+    padding-top: 5rem;
+    padding-left: 1.5rem;
+  }
+  .main-heading {
+    font-weight: 600;
+    font-size: 50px;
+    line-height: 55px;
+    color: rgba(3, 3, 3, 0.74);
+  }
+  .main-heading span {
+    color:  #3f448e;
+    font-weight: 800;
+    font-size: 40px;
+  }
+  .info-text {
+    margin-top: 1.5rem;
+    font-size: 19px;
+    line-height: 28px;
+    color: #334157;
+  }
+  
+  .grid-item-2 {
+    width: 100%;
+    height: 100%;
+  }
+
+  .team_img_wrapper {
+    width: 800px;
+    max-width: 100%;
+    height: 440px;
+    margin: 0%;
+  }
+
+
+  .team_img_wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 50px;
+  }
+
+
+  @media screen and (max-width: 991px) {
+    .wrapper {
+      padding-top: 3rem;
+    }
+    .grid-cols-2 {
+      grid-template-columns: repeat(auto-fit, minmax(100%, 1fr));
+    }
+    .grid-item-1 {
+      order: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding-top: 0;
+    }
+    .main-heading {
+      font-size: 32px;
+      text-align: center;
+      line-height: 40px;
+    }
+    .info-text {
+      font-size: 16px;
+      text-align: center;
+      padding: 0.7rem;
+    }
+    .btn_wrapper {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .grid-item-2 {
+      order: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .team_img_wrapper {
+      width: 350px;
+      height: 350px;
+    }
+    .featured_info span {
+      font-size: 19px;
+    }
+  }
