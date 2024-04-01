@@ -1,8 +1,6 @@
 import React from 'react'
 import { MapContainer, TileLayer} from 'react-leaflet';
-import './map.css';
-import Grid from '@mui/material/Grid';
-import RoutingControls from '../components/RoutingControls';
+import './map2.css';
 import EditTrip from '../components/EditTrip';
 
 
@@ -25,7 +23,7 @@ export default function Map() {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=cc66a61ec0de4760be46730c852b8ccc"
             />
-            <RoutingControls/>
+            
             <EditTrip/>
           </MapContainer>
             

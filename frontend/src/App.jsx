@@ -8,7 +8,7 @@ import MyRoutes from './pages/MyRoutes';
 import Header from './components/Header';
 import Map from './pages/Map';
 import PrivateRoute from './components/PrivateRoute';
-
+import Map2 from './pages/Map2';
 
 export default function App() {
   return (
@@ -24,6 +24,7 @@ export default function App() {
         <Route path='/Profile' element={<Profile/>}/>
         <Route path='/MyRoutes' element={<MyRoutes/>}/>
         <Route path='/MAP' element={<Map />}/>
+        <Route path='/update/:tripId' element={<Map2 />}/>
       </Route>
     </Routes>
   </BrowserRouter>

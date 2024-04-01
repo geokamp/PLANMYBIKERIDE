@@ -60,10 +60,7 @@ const icon = new L.icon({
   
 });
 
-
-
-
-const LeafletRoutingMachine = (props) => {
+export default function EditTrip(props) {
     const map = useMap();
     const { currentUser } = useSelector((state) => state.user);
     const [formData, setFormData] = useState({
@@ -750,5 +747,3 @@ const LeafletRoutingMachine = (props) => {
      </> 
     )
   };
-    
-  export default LeafletRoutingMachine;

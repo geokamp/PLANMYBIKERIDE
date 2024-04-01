@@ -33,6 +33,29 @@ export const createTrip = async (req, res, next) => {
 
 
 
+  export const updateTrip = async (req, res, next) => {
+    const trip = await Trips.findById(req.params.id);
+    if (!trip) {
+      return next(errorHandler(404, 'Trip not found!'));
+    }
+    if (req.user.id !== trip.userRef) {
+      return next(errorHandler(401, 'You can only update your own trips!'));
+    }
+  
+    try {
+      const updatedTrip = await Trips.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        { new: true }
+      );
+      res.status(200).json(updatedTrip);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+
+
   
 
 

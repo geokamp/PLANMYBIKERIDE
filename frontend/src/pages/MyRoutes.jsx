@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { useRef, useState, useEffect } from 'react';
 import Trips from '../../../backend/models/trips.model';
 import Button from '@mui/material/Button';
+import { Link } from 'react-router-dom';
 
 
 
@@ -51,6 +52,10 @@ export default function MyRoutes() {
     }
   };
 
+
+
+
+
   return (
     <div style={{ position: "absolute", left: "35%", top: "10%" }}>
     <h1>My Routes</h1>
@@ -71,9 +76,14 @@ export default function MyRoutes() {
               <h4 style={{textTransform: "uppercase", marginRight:"20px"}}>Duration:{trip.duration}</h4>
            </div>
            <div style={{display:"inline-block"}}>
-            <Button variant="contained" sx={{bgcolor:"red"}} onClick={() => handleTripsDelete(trip._id)} style={{}}>
+            <Button variant="contained" sx={{bgcolor:"red",  marginRight:"5px"}} onClick={() => handleTripsDelete(trip._id)}>
               Delete
             </Button>
+            <Link to={`/update/${trip._id}`}>
+              <Button variant="contained" sx={{bgcolor:"green"}}>
+                Edit
+              </Button>
+            </Link>
            </div>
         </div>
       ))}

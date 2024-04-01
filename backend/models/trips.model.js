@@ -11,14 +11,7 @@ const tripsSchema = new mongoose.Schema(
         type: String,
         required: true,
       },
-      duration: {
-        type: String,
-        required: true,
-      },
-      distance: {
-        type: String,
-        required: true,
-      },
+      
       
       userRef: {
         type: String,
