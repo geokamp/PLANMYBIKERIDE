@@ -3,16 +3,22 @@ import mongoose from 'mongoose';
 
 const tripsSchema = new mongoose.Schema(
     {
-      start: {
-        type: String,
+      waypoints: {
+        type: [String],
         required: true,
       },
-      destination: {
-        type: String,
-        required: true,
+      duration:{
+        type : String
       },
-      
-      
+      distance:{
+        type : String
+      },
+      startDate:{
+        type : String
+      },
+      endDate:{
+        type : String
+      },
       userRef: {
         type: String,
         required: true,

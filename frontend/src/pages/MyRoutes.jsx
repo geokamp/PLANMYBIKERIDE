@@ -52,28 +52,27 @@ export default function MyRoutes() {
     }
   };
 
-
+  useEffect(() => {
+    handleShowTrips(); // Execute handleShowTrips when component mounts
+  }, []); 
 
 
 
   return (
-    <div style={{ position: "absolute", left: "35%", top: "10%" }}>
+    <div style={{ position: "absolute", left: "20%", top: "10%" }}>
     <h1>My Routes</h1>
-    <Button
-    onClick={handleShowTrips}   
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 0 ,bgcolor: '#3f448e' }}
-            >show</Button>
+    
     {userTrips &&
       userTrips.length > 0 &&
       userTrips.map((trip) => (
         <div key={trip._id} style={{ textAlign:"center", borderBottomStyle: "solid", borderWidth:"1px", padding:"13px", marginTop:"4px"}}>
             <div style={{display:"flex",justifyContent: "space-between", padding:"6px"}}>
-              <h4 style={{textTransform: "uppercase", marginRight:"20px"}}>START: {trip.start}</h4>
-              <h4 style={{textTransform: "uppercase", marginRight:"20px"}}>END: {trip.destination}</h4>
+              <h4 style={{textTransform: "uppercase", marginRight:"20px"}}>START: {trip.waypoints[0]}</h4>
+              <h4 style={{textTransform: "uppercase", marginRight:"20px"}}>END: {trip.waypoints[1]}</h4>
               <h4 style={{textTransform: "uppercase", marginRight:"20px"}}>Distance: {trip.distance} km</h4>
               <h4 style={{textTransform: "uppercase", marginRight:"20px"}}>Duration:{trip.duration}</h4>
+              <h4 style={{textTransform: "uppercase", marginRight:"20px"}}>Start Day: {trip.startDate}</h4>
+              <h4 style={{textTransform: "uppercase", marginRight:"20px"}}>End Day: {trip.endDate}</h4>
            </div>
            <div style={{display:"inline-block"}}>
             <Button variant="contained" sx={{bgcolor:"red",  marginRight:"5px"}} onClick={() => handleTripsDelete(trip._id)}>

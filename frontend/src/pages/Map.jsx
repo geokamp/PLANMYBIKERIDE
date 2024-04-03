@@ -26,7 +26,7 @@ export default function Map() {
                 url="https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=cc66a61ec0de4760be46730c852b8ccc"
             />
             <RoutingControls/>
-            <EditTrip/>
+            
           </MapContainer>
             
            

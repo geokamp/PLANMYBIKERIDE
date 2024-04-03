@@ -46,7 +46,7 @@ import SpeedDialAction from '@mui/material/SpeedDialAction';
 import SaveIcon from '@mui/icons-material/Save';
 import ShareIcon from '@mui/icons-material/Share';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { DateField} from '@mui/x-date-pickers';
 import HelpIcon from '@mui/icons-material/Help';
 import Tooltip from '@mui/material/Tooltip';
@@ -63,11 +63,13 @@ const icon = new L.icon({
 export default function EditTrip(props) {
     const map = useMap();
     const { currentUser } = useSelector((state) => state.user);
+    const params = useParams();
     const [formData, setFormData] = useState({
-      start: '',
-      destination: '',
-      duration: '',
-      distance:''
+      waypoints: [],
+      duration: "",
+      distance: "",
+      startDate: "",
+      endDate: ""
     });
     const [error, setError] = useState(false);
     const navigate = useNavigate();
@@ -93,7 +95,7 @@ export default function EditTrip(props) {
     const [rain, setRain] = useState([]);
     const [rain2, setRain2] = useState([]);
     const zoomInControl = L.control.zoom({ position: 'bottomleft' });
-    const [expanded, setExpanded] = useState(false);
+    const [expanded, setExpanded] = useState(true);
     const [length, setLength] = useState('');
     const [points, setPoints] = useState('');
     const [seed, setSeed] = useState('');
@@ -104,41 +106,6 @@ export default function EditTrip(props) {
     const [value, setValue] = useState(null);
     const [evalue, setEValue] = useState(null);
     const [open, setOpen] = useState(false);
-    const images={
-      0:'../../public/photos/sun.png',
-      1:'../../public/photos/clear-sky.png',
-      2:'../../public/photos/clear-sky.png',
-      3:'../../public/photos/clear-sky.png',
-      45:'../../public/photos/haze.png',
-      48:'../../public/photos/haze.png',
-      51:'../../public/photos/drizzle.png',
-      56:'../../public/photos/freezing-rain',
-      57:'../../public/photos/freezing-rain',
-      61:'../../public/photos/light-rain.png',
-      63:'../../public/photos/rain.png',
-      65:'../../public/photos/storm.png',
-      66:'../../public/photos/freezing-rain',
-      67:'../../public/photos/freezing-rain',
-      71:'../../public/photos/light-snowfall.png',
-      73:'../../public/photos/snowfall.png',
-      75:'../../public/photos/snowfall.png',
-      77:'../../public/photos/snowfall.png',
-      80:'../../public/photos/rain.png',
-      81:'../../public/photos/rain.png',
-      82:'../../public/photos/rain.png',
-      83:'../../public/photos/snowfall.png',
-      85:'../../public/photos/snowfall.png',
-      95: '../../public/photos/rain.png',
-      96:'../../public/photos/rain.png',
-      99:'../../public/photos/rain.png'
-    };
-    const [gpsOpen, setGpsOpen] = useState(false);
-    const { window } = props;
-    const toggleDrawer = (newOpen) => () => {
-      setGpsOpen(newOpen);
-  
-    };
-
     const container = window !== undefined ? () => window().document.body : undefined;
     const [isFormValid, setIsFormValid] = useState(false);
     const [index, setIndex] = useState(0);
@@ -148,6 +115,59 @@ export default function EditTrip(props) {
 
     const [processedLocations, setProcessedLocations] = useState([]);
 
+    
+    
+    
+    
+    useEffect(() => {
+      const fetchTrip = async () => {
+        const tripId = params.tripId;
+        const res = await fetch(`/backend/trips/get/${tripId}`);
+        const data = await res.json();
+        if (data.success === false) {
+          console.log(data.message);
+          return;
+        }
+        setFormData(data);
+      };
+  
+      fetchTrip();
+    }, []);
+    
+    
+    
+    const updateFormState = () => {
+      const { waypoints, startDate, endDate} = formData;
+    
+      // Update inputFields with waypoints
+      setInputFields(
+        waypoints.map((waypoint) => ({
+          id: uuidv4(),
+          location: waypoint
+        }))
+      );
+      
+        const parsedDay = dayjs(startDate, 'YYYY-MM-DD');
+        setValue(parsedDay);
+
+        const parsedEday = dayjs(endDate, 'YYYY-MM-DD');
+        setEValue(parsedEday);
+    };
+    
+    useEffect(()=>{
+      updateFormState();
+      
+    }, [formData])
+    
+    
+  
+    
+    
+    
+    
+    
+    
+    
     const handleSubmit = (e) => {
       e.preventDefault();
       console.log("InputFields", inputFields);
@@ -361,8 +381,6 @@ export default function EditTrip(props) {
      try{ 
       getRoute();
       fetchData();
-      handleToggle();
-      setOpen(true);
       checkWeather();
      }catch (error) {
       // Log the error
@@ -399,72 +417,10 @@ export default function EditTrip(props) {
       return imageUrl2 ? <img key={value} src={imageUrl2} alt={` ${value}`} width={25} height={25} /> : null;
     });
     
-    const handleToggle = () => {
-      setExpanded(!expanded);
-    };
+ 
 
-
-    const handleClose = () => {
-      setOpen(false);
-    };
+   
     
-    const checkWeather = () =>{
-      const allCodec = codec.concat(codec2);
-      const count = {};
-      allCodec.forEach(num =>{
-        count[num] = (count[num] || 0)
-      });
-
-      let mostFrequentNumber;
-      let highestCount = 0;
-      for (const num in count) {
-          if (count[num] > highestCount) {
-              highestCount = count[num];
-              mostFrequentNumber = num;
-          }
-        }
-
-      if(mostFrequentNumber == 0){
-        return "Your Trip will be Sunny! Do you want another Route?"
-      }
-      else if(mostFrequentNumber == 1 || 2 || 3){
-        return "Your Route will be Clear Skies! Do you want another Route?"
-      }
-      else if(mostFrequentNumber == 56 || 57 || 61 || 63 || 65 || 66 || 67){
-        return "Your Route will be Rainy! Do you want another Route?"
-      }
-
-
-    }
-
-    const onNextStepClick = () => {
-      if(index === steps.length - 1){
-        setIsFinished(true);
-      }
-      else{
-        setIndex(index + 1);
-      }
-    };
-
-
-    const onBackStepClick = () => {
-      setIndex(index-1);
-    };
-
-
-    const getText=()=>{
-      if(isFinished){
-        return "You arrived at your destination!!!!!"
-      }
-      else{
-        const currentStep = steps[index];
-        const cDistance = currentDistance[index];
-        console.log(cDistance);
-        return `${currentStep.instruction} in ${Math.round(cDistance.distance)} meters`
-      }
-    };
-    
-
     
    
 
@@ -525,9 +481,9 @@ export default function EditTrip(props) {
 
       <>  
       <div style={ {position: "absolute", zIndex: '1000',top:"10px", right:"10px", padding: "5px", width:"350px", height:"500px", overflow: 'auto', borderRadius:"10px", marginBottom:'5px'} }>
-      <Accordion> 
+      <Accordion expanded={expanded}> 
         <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
+          expanded={expanded}
           aria-controls="panel1-content"
           id="panel1-header"
         >
@@ -564,7 +520,6 @@ export default function EditTrip(props) {
         <Button variant="contained" style={{marginTop:"3px"}} onClick={handletwofun}><DirectionsIcon /></Button>
         <Button variant="contained" style={{marginTop:"3px"}} onClick={handleButtonClick}
         disabled={!isFormValid}><RefreshIcon/> </Button>
-        <Button variant="contained" sx={{display: { md: 'none' }} } onClick={toggleDrawer(true)}>GPS</Button>
         <Button variant="contained" style={{marginTop:"3px"}} onClick={handleSave}><SaveIcon /></Button>
         </Stack>
         <Stack spacing={1} style={{marginTop:"15px"}}>
@@ -661,88 +616,13 @@ export default function EditTrip(props) {
       </AccordionDetails>
       </Accordion>  
       </div>
-      <div style={{position: "absolute",
-                    zIndex: "1000",
-                    top:"10px",
-                    left:"10px", 
-                    padding:"5px",
-                    width:"400px",
-                    height:"300px",
-                    overflow: "auto",
-                    borderRadius:"10px"}}>
-      <Accordion expanded={expanded}>  
-       <AccordionSummary
-          aria-controls="panel1-content"
-          id="panel1-header"
-        >
-          <h1>Weather</h1>
-        </AccordionSummary>
-     <AccordionDetails >
-          <div>
-              <h2>{processedLocations[0]}</h2>
-              <ul style={{ margin: '0', padding: '0px', listStyleType: 'none' }}>
-              {temp.map((tem, index) => (
-                (index % 5 === 0) &&<li key={index} style={{ display: 'inline-block', margin: '5px' }}>
-                <div>{formattedDays[index]}</div>
-                <div>{tem}°C</div>
-                <div>{formattedCode[index]}</div>
-                <div>Visibility: {visib[index]}m</div>
-                <div>Wind Speed: {windspeed[index]}</div>
-                <div>Wind Dir: {winddirection[index]}</div>
-                <div>Rain: {rain[index]}mm</div>
-              </li>
-              ))}
-            </ul>
-          </div>    
-          <div>
-          <h2>{processedLocations[1]}</h2>
-                <ul style={{ margin: '0', padding: '0px', listStyleType: 'none' }}>
-                  {temp2.map((tem2, index2) => (
-                    (index2 % 5 === 0) &&<li key={index2} style={{ display: 'inline-block', margin: ' 5px' }}>
-                    <div>{formattedDays[index2]}</div>
-                    <div>{tem2}°C</div>
-                    <div>{formattedCodeSec[index2]}</div>
-                    <div>Visibility:{visib2[index2]}m</div>
-                    <div>Wind Speed: {windspeed2[index2]}</div>
-                    <div>Wind Dir: {winddirection2[index2]}</div>
-                    <div>Rain: {rain2[index2]}mm</div>
-                    </li>
-                  ))}
-                </ul>
-
-          </div>
       
-      </AccordionDetails>
-      </Accordion>
-      </div>
         
 
     
       
       
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">
-          {"Your Route is Ready!"}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            {checkWeather()};
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>No</Button>
-          <Button onClick={handleDownload} autoFocus>
-            Yes!
-          </Button>
-        </DialogActions>
-      </Dialog>
-    
-      
+  
       
      </> 
     )

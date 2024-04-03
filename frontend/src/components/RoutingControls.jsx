@@ -67,10 +67,11 @@ const LeafletRoutingMachine = (props) => {
     const map = useMap();
     const { currentUser } = useSelector((state) => state.user);
     const [formData, setFormData] = useState({
-      start: '',
-      destination: '',
-      duration: '',
-      distance:''
+      waypoints: [],
+      duration: "",
+      distance: "",
+      startDate: "",
+      endDate: ""
     });
     const [error, setError] = useState(false);
     const navigate = useNavigate();
@@ -78,9 +79,10 @@ const LeafletRoutingMachine = (props) => {
     const [distance, setDisatnce]= useState("0");
     const [duration, setDuration]= useState("0");
     const [coords, setCoords] = useState([]);
+    const [markers, setMarkers] = useState([]);
     const [end, setEnd] = useState([]);
     const [steps, setSteps] = useState([]);
-    const [starterMarker, setStarterMarker] = useState();
+    const [starterMarker, setStarterMarker] = useState([]);
     const [endMarker, setEndMarker] = useState();
     const [temp, setTemp]= useState([]);
     const [codec, setCodec] = useState([]);
@@ -153,7 +155,6 @@ const LeafletRoutingMachine = (props) => {
 
     const handleSubmit = (e) => {
       e.preventDefault();
-      console.log("InputFields", inputFields);
       
     };
 
@@ -167,11 +168,11 @@ const LeafletRoutingMachine = (props) => {
       
       setInputFields(newInputFields);
 
-      const lastInputField = newInputFields[newInputFields.length - 1];
+      const location = inputFields.map(field => field.location);
+
       setFormData(prevData => ({
         ...prevData,
-        start: inputFields[0].location,
-        destination: lastInputField.location,
+        waypoints: location
       }));
 
     };
@@ -187,6 +188,8 @@ const LeafletRoutingMachine = (props) => {
       const values  = [...inputFields];
       values.splice(values.findIndex(value => value.id === id), 1);
       setInputFields(values);
+      
+      
     };
 
     const handleAll=(id, e)=>{
@@ -251,14 +254,14 @@ const LeafletRoutingMachine = (props) => {
         const reversed = [latlon[1], latlon[0]];
         setCoords([...coords, latlon]);
         const myMarker = L.marker(reversed, { icon: icon }).addTo(map);
-        setStarterMarker(myMarker);
+        setStarterMarker([...starterMarker, myMarker]);
         const markerPos = myMarker.getLatLng();
         map.setView(markerPos, map.getZoom());
         return reversed;
       
     };
     
-    
+    console.log("InputFields", inputFields);
     const fetchData = async () => {
     try{
       const data = await WeatherApi(coords, value, evalue);
@@ -378,14 +381,25 @@ const LeafletRoutingMachine = (props) => {
     const handleDateChange = (newValue) => {
       const formattedDate = newValue ? dayjs(newValue).format('YYYY-MM-DD') : null;
       setValue(formattedDate); 
+
+      setFormData(prevData => ({
+        ...prevData,
+        startDate: formattedDate
+      }))
+      
+
     };
 
     const handleDateChangeEnd = (newValue) => {   
       const formattedDate = newValue ? dayjs(newValue).format('YYYY-MM-DD') : null;
       setEValue(formattedDate); 
+
+      setFormData(prevData => ({
+        ...prevData,
+        endDate: formattedDate
+      }))
     };
     
-
     const formattedDays = time.map(value=> {
       const dayName = moment(value).format("dddd HH:mm");
       return dayName;
@@ -440,32 +454,7 @@ const LeafletRoutingMachine = (props) => {
 
     }
 
-    const onNextStepClick = () => {
-      if(index === steps.length - 1){
-        setIsFinished(true);
-      }
-      else{
-        setIndex(index + 1);
-      }
-    };
-
-
-    const onBackStepClick = () => {
-      setIndex(index-1);
-    };
-
-
-    const getText=()=>{
-      if(isFinished){
-        return "You arrived at your destination!!!!!"
-      }
-      else{
-        const currentStep = steps[index];
-        const cDistance = currentDistance[index];
-        console.log(cDistance);
-        return `${currentStep.instruction} in ${Math.round(cDistance.distance)} meters`
-      }
-    };
+    
     
 
     
@@ -567,7 +556,6 @@ const LeafletRoutingMachine = (props) => {
         <Button variant="contained" style={{marginTop:"3px"}} onClick={handletwofun}><DirectionsIcon /></Button>
         <Button variant="contained" style={{marginTop:"3px"}} onClick={handleButtonClick}
         disabled={!isFormValid}><RefreshIcon/> </Button>
-        <Button variant="contained" sx={{display: { md: 'none' }} } onClick={toggleDrawer(true)}>GPS</Button>
         <Button variant="contained" style={{marginTop:"3px"}} onClick={handleSave}><SaveIcon /></Button>
         </Stack>
         <Stack spacing={1} style={{marginTop:"15px"}}>
