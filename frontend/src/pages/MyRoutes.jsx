@@ -68,7 +68,7 @@ export default function MyRoutes() {
         <div key={trip._id} style={{ textAlign:"center", borderBottomStyle: "solid", borderWidth:"1px", padding:"13px", marginTop:"4px"}}>
             <div style={{display:"flex",justifyContent: "space-between", padding:"6px"}}>
               <h4 style={{textTransform: "uppercase", marginRight:"20px"}}>START: {trip.waypoints[0]}</h4>
-              <h4 style={{textTransform: "uppercase", marginRight:"20px"}}>END: {trip.waypoints[1]}</h4>
+              <h4 style={{textTransform: "uppercase", marginRight:"20px"}}>END: {trip.waypoints[trip.waypoints.length - 1]}</h4>
               <h4 style={{textTransform: "uppercase", marginRight:"20px"}}>Distance: {trip.distance} km</h4>
               <h4 style={{textTransform: "uppercase", marginRight:"20px"}}>Duration:{trip.duration}</h4>
               <h4 style={{textTransform: "uppercase", marginRight:"20px"}}>Start Day: {trip.startDate}</h4>

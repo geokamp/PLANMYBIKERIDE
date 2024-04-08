@@ -52,6 +52,7 @@ import HelpIcon from '@mui/icons-material/Help';
 import Tooltip from '@mui/material/Tooltip';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
+
 const icon = new L.icon({
   iconSize: [25, 41],
   iconAnchor: [10, 41],
@@ -176,7 +177,7 @@ const LeafletRoutingMachine = (props) => {
       }));
 
     };
-
+console.log(inputFields);
 
     const handleAddFields = () => {
       setInputFields([...inputFields, {id: uuidv4(),  location: '' }])
@@ -299,7 +300,7 @@ const LeafletRoutingMachine = (props) => {
     }
     };
 
-  
+
 
     const getRoute =  async ()=> {
      try{
@@ -310,7 +311,7 @@ const LeafletRoutingMachine = (props) => {
       setDuration(newRoute.duration);
       setSteps(newRoute.steps);
       setCurrentDistance(newRoute.currentDistance);
-
+      
 
 
       const middleIndex = Math.floor(newRoute.coordinates.length/2);
@@ -335,6 +336,8 @@ const LeafletRoutingMachine = (props) => {
       throw error;
     }
     }
+
+    
 
     const getRoundTrip = async()=>{
       const roundTrip = await RoundTrip(map, coords, length, points, seed);
@@ -557,6 +560,7 @@ const LeafletRoutingMachine = (props) => {
         <Button variant="contained" style={{marginTop:"3px"}} onClick={handleButtonClick}
         disabled={!isFormValid}><RefreshIcon/> </Button>
         <Button variant="contained" style={{marginTop:"3px"}} onClick={handleSave}><SaveIcon /></Button>
+        
         </Stack>
         <Stack spacing={1} style={{marginTop:"15px"}}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>

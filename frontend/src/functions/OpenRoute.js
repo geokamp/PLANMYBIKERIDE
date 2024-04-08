@@ -38,7 +38,8 @@ try{
           distance: 0,
           duration: 0,
           steps:[],
-          currentDistance: []
+          currentDistance: [],
+          rawData: data 
         };
 
         if( route.geometry && Array.isArray(route.geometry.coordinates)){

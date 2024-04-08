@@ -60,7 +60,10 @@ const icon = new L.icon({
   
 });
 
-export default function EditTrip(props) {
+
+
+
+const EditTrip = (props) => {
     const map = useMap();
     const { currentUser } = useSelector((state) => state.user);
     const params = useParams();
@@ -77,9 +80,10 @@ export default function EditTrip(props) {
     const [distance, setDisatnce]= useState("0");
     const [duration, setDuration]= useState("0");
     const [coords, setCoords] = useState([]);
+    const [markers, setMarkers] = useState([]);
     const [end, setEnd] = useState([]);
     const [steps, setSteps] = useState([]);
-    const [starterMarker, setStarterMarker] = useState();
+    const [starterMarker, setStarterMarker] = useState([]);
     const [endMarker, setEndMarker] = useState();
     const [temp, setTemp]= useState([]);
     const [codec, setCodec] = useState([]);
@@ -95,7 +99,7 @@ export default function EditTrip(props) {
     const [rain, setRain] = useState([]);
     const [rain2, setRain2] = useState([]);
     const zoomInControl = L.control.zoom({ position: 'bottomleft' });
-    const [expanded, setExpanded] = useState(true);
+    const [expanded, setExpanded] = useState(false);
     const [length, setLength] = useState('');
     const [points, setPoints] = useState('');
     const [seed, setSeed] = useState('');
@@ -105,7 +109,42 @@ export default function EditTrip(props) {
     const [endDate, setEndDate] = useState([]);
     const [value, setValue] = useState(null);
     const [evalue, setEValue] = useState(null);
-    const [open, setOpen] = useState(false);
+    const [open, setOpen] = useState(true);
+    const images={
+      0:'../../public/photos/sun.png',
+      1:'../../public/photos/clear-sky.png',
+      2:'../../public/photos/clear-sky.png',
+      3:'../../public/photos/clear-sky.png',
+      45:'../../public/photos/haze.png',
+      48:'../../public/photos/haze.png',
+      51:'../../public/photos/drizzle.png',
+      56:'../../public/photos/freezing-rain',
+      57:'../../public/photos/freezing-rain',
+      61:'../../public/photos/light-rain.png',
+      63:'../../public/photos/rain.png',
+      65:'../../public/photos/storm.png',
+      66:'../../public/photos/freezing-rain',
+      67:'../../public/photos/freezing-rain',
+      71:'../../public/photos/light-snowfall.png',
+      73:'../../public/photos/snowfall.png',
+      75:'../../public/photos/snowfall.png',
+      77:'../../public/photos/snowfall.png',
+      80:'../../public/photos/rain.png',
+      81:'../../public/photos/rain.png',
+      82:'../../public/photos/rain.png',
+      83:'../../public/photos/snowfall.png',
+      85:'../../public/photos/snowfall.png',
+      95: '../../public/photos/rain.png',
+      96:'../../public/photos/rain.png',
+      99:'../../public/photos/rain.png'
+    };
+    const [gpsOpen, setGpsOpen] = useState(false);
+    const { window } = props;
+    const toggleDrawer = (newOpen) => () => {
+      setGpsOpen(newOpen);
+  
+    };
+
     const container = window !== undefined ? () => window().document.body : undefined;
     const [isFormValid, setIsFormValid] = useState(false);
     const [index, setIndex] = useState(0);
@@ -114,12 +153,14 @@ export default function EditTrip(props) {
     const [inputFields, setInputFields] = useState([{id: uuidv4(), location:''}]);
 
     const [processedLocations, setProcessedLocations] = useState([]);
+  
+ 
+    
+    
+ 
+      
 
-    
-    
-    
-    
-    useEffect(() => {
+    useEffect(()=>{
       const fetchTrip = async () => {
         const tripId = params.tripId;
         const res = await fetch(`/backend/trips/get/${tripId}`);
@@ -130,47 +171,43 @@ export default function EditTrip(props) {
         }
         setFormData(data);
       };
-  
-      fetchTrip();
-    }, []);
-    
-    
-    
-    const updateFormState = () => {
-      const { waypoints, startDate, endDate} = formData;
-    
-      // Update inputFields with waypoints
-      setInputFields(
-        waypoints.map((waypoint) => ({
-          id: uuidv4(),
-          location: waypoint
-        }))
-      );
-      
-        const parsedDay = dayjs(startDate, 'YYYY-MM-DD');
-        setValue(parsedDay);
 
-        const parsedEday = dayjs(endDate, 'YYYY-MM-DD');
-        setEValue(parsedEday);
-    };
-    
-    useEffect(()=>{
-      updateFormState();
+      fetchTrip();
+    }, [])
       
-    }, [formData])
+      
+     console.log(formData);
+
+  const updateFormState = () => {
     
-    
+    const { waypoints, startDate, endDate} = formData;
   
+    // Update inputFields with waypoints
+    setInputFields( 
+      waypoints.map((waypoint) => ({
+        id: uuidv4(),
+        location: waypoint
+      }))
+    );
     
-    
-    
-    
-    
-    
-    
+    setValue(prevValue => {
+      const parsedDay = dayjs(startDate, 'YYYY-MM-DD');
+      return parsedDay;
+    });
+
+    setEValue(prevEValue => {
+      const parsedEday = dayjs(endDate, 'YYYY-MM-DD');
+      return parsedEday;
+    });
+  };
+  
+
+
+
+          
+
     const handleSubmit = (e) => {
       e.preventDefault();
-      console.log("InputFields", inputFields);
       
     };
 
@@ -184,11 +221,11 @@ export default function EditTrip(props) {
       
       setInputFields(newInputFields);
 
-      const lastInputField = newInputFields[newInputFields.length - 1];
+      const location = inputFields.map(field => field.location);
+
       setFormData(prevData => ({
         ...prevData,
-        start: inputFields[0].location,
-        destination: lastInputField.location,
+        waypoints: location
       }));
 
     };
@@ -204,6 +241,8 @@ export default function EditTrip(props) {
       const values  = [...inputFields];
       values.splice(values.findIndex(value => value.id === id), 1);
       setInputFields(values);
+      
+      
     };
 
     const handleAll=(id, e)=>{
@@ -226,7 +265,7 @@ export default function EditTrip(props) {
       try {
         setLoading(true);
         setError(false);
-        const res = await fetch('/backend/trips/create', {
+        const res = await fetch(`/backend/trips/update/${params.tripId}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -268,14 +307,14 @@ export default function EditTrip(props) {
         const reversed = [latlon[1], latlon[0]];
         setCoords([...coords, latlon]);
         const myMarker = L.marker(reversed, { icon: icon }).addTo(map);
-        setStarterMarker(myMarker);
+        setStarterMarker([...starterMarker, myMarker]);
         const markerPos = myMarker.getLatLng();
         map.setView(markerPos, map.getZoom());
         return reversed;
       
     };
     
-    
+    console.log("InputFields", inputFields);
     const fetchData = async () => {
     try{
       const data = await WeatherApi(coords, value, evalue);
@@ -313,7 +352,7 @@ export default function EditTrip(props) {
     }
     };
 
-  
+
 
     const getRoute =  async ()=> {
      try{
@@ -324,7 +363,7 @@ export default function EditTrip(props) {
       setDuration(newRoute.duration);
       setSteps(newRoute.steps);
       setCurrentDistance(newRoute.currentDistance);
-
+      
 
 
       const middleIndex = Math.floor(newRoute.coordinates.length/2);
@@ -349,6 +388,8 @@ export default function EditTrip(props) {
       throw error;
     }
     }
+
+    
 
     const getRoundTrip = async()=>{
       const roundTrip = await RoundTrip(map, coords, length, points, seed);
@@ -381,6 +422,8 @@ export default function EditTrip(props) {
      try{ 
       getRoute();
       fetchData();
+      handleToggle();
+      setOpen(true);
       checkWeather();
      }catch (error) {
       // Log the error
@@ -393,14 +436,25 @@ export default function EditTrip(props) {
     const handleDateChange = (newValue) => {
       const formattedDate = newValue ? dayjs(newValue).format('YYYY-MM-DD') : null;
       setValue(formattedDate); 
+
+      setFormData(prevData => ({
+        ...prevData,
+        startDate: formattedDate
+      }))
+      
+
     };
 
     const handleDateChangeEnd = (newValue) => {   
       const formattedDate = newValue ? dayjs(newValue).format('YYYY-MM-DD') : null;
       setEValue(formattedDate); 
+
+      setFormData(prevData => ({
+        ...prevData,
+        endDate: formattedDate
+      }))
     };
     
-
     const formattedDays = time.map(value=> {
       const dayName = moment(value).format("dddd HH:mm");
       return dayName;
@@ -417,10 +471,47 @@ export default function EditTrip(props) {
       return imageUrl2 ? <img key={value} src={imageUrl2} alt={` ${value}`} width={25} height={25} /> : null;
     });
     
- 
+    const handleToggle = () => {
+      setExpanded(!expanded);
+    };
 
-   
+
+    const handleClose = () => {
+      setOpen(false);
+    };
     
+    const checkWeather = () =>{
+      const allCodec = codec.concat(codec2);
+      const count = {};
+      allCodec.forEach(num =>{
+        count[num] = (count[num] || 0)
+      });
+
+      let mostFrequentNumber;
+      let highestCount = 0;
+      for (const num in count) {
+          if (count[num] > highestCount) {
+              highestCount = count[num];
+              mostFrequentNumber = num;
+          }
+        }
+
+      if(mostFrequentNumber == 0){
+        return "Your Trip will be Sunny! Do you want another Route?"
+      }
+      else if(mostFrequentNumber == 1 || 2 || 3){
+        return "Your Route will be Clear Skies! Do you want another Route?"
+      }
+      else if(mostFrequentNumber == 56 || 57 || 61 || 63 || 65 || 66 || 67){
+        return "Your Route will be Rainy! Do you want another Route?"
+      }
+
+
+    }
+
+    
+    
+
     
    
 
@@ -481,9 +572,8 @@ export default function EditTrip(props) {
 
       <>  
       <div style={ {position: "absolute", zIndex: '1000',top:"10px", right:"10px", padding: "5px", width:"350px", height:"500px", overflow: 'auto', borderRadius:"10px", marginBottom:'5px'} }>
-      <Accordion expanded={expanded}> 
+      <Accordion defaultExpanded={true}> 
         <AccordionSummary
-          expanded={expanded}
           aria-controls="panel1-content"
           id="panel1-header"
         >
@@ -521,6 +611,7 @@ export default function EditTrip(props) {
         <Button variant="contained" style={{marginTop:"3px"}} onClick={handleButtonClick}
         disabled={!isFormValid}><RefreshIcon/> </Button>
         <Button variant="contained" style={{marginTop:"3px"}} onClick={handleSave}><SaveIcon /></Button>
+        
         </Stack>
         <Stack spacing={1} style={{marginTop:"15px"}}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -528,7 +619,7 @@ export default function EditTrip(props) {
             label="Start Date"
             value={value}
             onChange={handleDateChange}
-            renderInput={(params) => <TextField {...params} />}
+           
           />
         </LocalizationProvider>
         
@@ -537,7 +628,7 @@ export default function EditTrip(props) {
             label="End Date"
             value={evalue}
             onChange={handleDateChangeEnd}
-            renderInput={(params) => <TextField {...params} />}
+            
           />
         </LocalizationProvider>
         </Stack>
@@ -622,8 +713,11 @@ export default function EditTrip(props) {
     
       
       
-  
+     
+      
       
      </> 
     )
   };
+    
+  export default EditTrip;
