@@ -51,7 +51,8 @@ import { DateField} from '@mui/x-date-pickers';
 import HelpIcon from '@mui/icons-material/Help';
 import Tooltip from '@mui/material/Tooltip';
 import RefreshIcon from '@mui/icons-material/Refresh';
-
+import GeoJsonToGpx from "@dwayneparton/geojson-to-gpx";
+import { DOMImplementation } from '@xmldom/xmldom';
 
 const icon = new L.icon({
   iconSize: [25, 41],
@@ -72,7 +73,10 @@ const LeafletRoutingMachine = (props) => {
       duration: "",
       distance: "",
       startDate: "",
-      endDate: ""
+      endDate: "",
+      lenght:"",
+      points: "",
+      seed: ""
     });
     const [error, setError] = useState(false);
     const navigate = useNavigate();
@@ -104,7 +108,7 @@ const LeafletRoutingMachine = (props) => {
     const [points, setPoints] = useState('');
     const [seed, setSeed] = useState('');
     const [isTextFieldRequired, setIsTextFieldRequired] = useState(false);
-    const [route, setRoute] = useState([]);
+    const [route, setRoute] = useState();
     const [startDate, setStartDate] = useState([]);
     const [endDate, setEndDate] = useState([]);
     const [value, setValue] = useState(null);
@@ -151,9 +155,9 @@ const LeafletRoutingMachine = (props) => {
     const [isFinished, setIsFinished] = useState(false);
     const [currentDistance, setCurrentDistance] = useState([])
     const [inputFields, setInputFields] = useState([{id: uuidv4(), location:''}]);
-
+    const [data, setData] = useState();
     const [processedLocations, setProcessedLocations] = useState([]);
-
+    
     const handleSubmit = (e) => {
       e.preventDefault();
       
@@ -168,7 +172,7 @@ const LeafletRoutingMachine = (props) => {
       })
       
       setInputFields(newInputFields);
-
+      
       const location = inputFields.map(field => field.location);
 
       setFormData(prevData => ({
@@ -196,9 +200,12 @@ console.log(inputFields);
     const handleAll=(id, e)=>{
       handleChangeInput(id, e);
       handleSubmit(e);
-      
     };
+    
 
+    
+      
+    
 
     const handleKeyDown = (event, location) => {
       if (event.key === "Enter" && !processedLocations.includes(location)) {
@@ -350,6 +357,14 @@ console.log(inputFields);
       fetchData();
       handleToggle();
 
+      setFormData(prevData => ({
+        ...prevData,
+        points: points,
+        lenght: length,
+        seed: seed,
+        duration: convertDuration(roundTrip.duration),
+        distance: convertDistance(roundTrip.distance)
+      }))
     }
 
     const handleRound = () =>{
@@ -511,10 +526,39 @@ console.log(inputFields);
         console.log("All fields are filled. Executing the function...");
       }
     };
-
-
-
     
+
+    const createXmlString = (segments) => {
+      let result = '<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" version="1.1" creator="runtracker"><metadata/><trk><name></name><desc></desc>'
+      result += '<trkseg>';
+      segments.forEach((segment) => {
+        result += `<trkpt lat="${segment[1]}" lon="${segment[0]}"></trkpt>`;
+      });
+      result += '</trkseg>';
+      result += '</trk></gpx>';
+      return result;
+    }
+
+    const downloadGPX = (route)=> {
+      try {
+        console.log(route);
+        const xml = createXmlString(route);
+        const url = 'data:text/json;charset=utf-8,' + xml;
+        const link = document.createElement('a');
+        link.download = `klm.gpx`;
+        link.href = url;
+        document.body.appendChild(link);
+        link.click();
+        } catch (error) {
+          console.error('Error downloading GPX:', error);
+        }
+      }
+    
+  
+      const handleGpx = () => {
+        downloadGPX(route);
+      };
+
 
     return(
 
@@ -531,12 +575,14 @@ console.log(inputFields);
         <AccordionDetails>
          {inputFields.map(inputField => (
           <div key={inputField.id}>
+          
           <TextField id="outlined-basic" 
             label="Where to?" 
+            autoComplete="address-level2"
             name="location"
+            size="small"
             variant="outlined" 
             required={isTextFieldRequired}
-            size="small"
             style={{width:'150px', marginTop:'10px'}}
             value={inputField.location}
             onChange={event => handleAll(inputField.id, event)}
@@ -552,6 +598,7 @@ console.log(inputFields);
             >
               <AddIcon />
             </IconButton>
+            
           </div>
         ))}
         <Stack spacing={1} direction="row">
@@ -560,7 +607,7 @@ console.log(inputFields);
         <Button variant="contained" style={{marginTop:"3px"}} onClick={handleButtonClick}
         disabled={!isFormValid}><RefreshIcon/> </Button>
         <Button variant="contained" style={{marginTop:"3px"}} onClick={handleSave}><SaveIcon /></Button>
-        
+        <Button variant="contained" style={{marginTop:"3px"}} onClick={handleGpx}><SaveIcon /></Button>
         </Stack>
         <Stack spacing={1} style={{marginTop:"15px"}}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>

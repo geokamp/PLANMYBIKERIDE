@@ -402,6 +402,15 @@ const EditTrip = (props) => {
       fetchData();
       handleToggle();
 
+
+      setFormData(prevData => ({
+        ...prevData,
+        points: points,
+        lenght: length,
+        seed: seed,
+        duration: convertDuration(roundTrip.duration),
+        distance: convertDistance(roundTrip.distance)
+      }))
     }
 
     const handleRound = () =>{
@@ -611,7 +620,7 @@ const EditTrip = (props) => {
         <Button variant="contained" style={{marginTop:"3px"}} onClick={handleButtonClick}
         disabled={!isFormValid}><RefreshIcon/> </Button>
         <Button variant="contained" style={{marginTop:"3px"}} onClick={handleSave}><SaveIcon /></Button>
-        
+        <Button variant="contained" style={{marginTop:"3px"}} onClick={updateFormState }><SaveIcon /></Button>
         </Stack>
         <Stack spacing={1} style={{marginTop:"15px"}}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>

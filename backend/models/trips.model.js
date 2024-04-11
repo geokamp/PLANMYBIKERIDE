@@ -19,6 +19,15 @@ const tripsSchema = new mongoose.Schema(
       endDate:{
         type : String
       },
+      lenght:{
+        type : String
+      },
+      points:{
+        type : String
+      },
+      seed:{
+        type : String
+      },
       userRef: {
         type: String,
         required: true,
