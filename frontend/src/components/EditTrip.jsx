@@ -46,7 +46,7 @@ import SpeedDialAction from '@mui/material/SpeedDialAction';
 import SaveIcon from '@mui/icons-material/Save';
 import ShareIcon from '@mui/icons-material/Share';
 import { useSelector } from 'react-redux';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { DateField} from '@mui/x-date-pickers';
 import HelpIcon from '@mui/icons-material/Help';
 import Tooltip from '@mui/material/Tooltip';
@@ -180,7 +180,7 @@ const EditTrip = (props) => {
 
   const updateFormState = () => {
     
-    const { waypoints, startDate, endDate} = formData;
+    const { waypoints, startDate, endDate, lenght, seed, points} = formData;
   
     // Update inputFields with waypoints
     setInputFields( 
@@ -199,6 +199,13 @@ const EditTrip = (props) => {
       const parsedEday = dayjs(endDate, 'YYYY-MM-DD');
       return parsedEday;
     });
+
+    setLength(lenght);
+    setSeed(seed);
+    setPoints(points);
+
+    handleClose();
+    
   };
   
 
@@ -620,7 +627,7 @@ const EditTrip = (props) => {
         <Button variant="contained" style={{marginTop:"3px"}} onClick={handleButtonClick}
         disabled={!isFormValid}><RefreshIcon/> </Button>
         <Button variant="contained" style={{marginTop:"3px"}} onClick={handleSave}><SaveIcon /></Button>
-        <Button variant="contained" style={{marginTop:"3px"}} onClick={updateFormState }><SaveIcon /></Button>
+        
         </Stack>
         <Stack spacing={1} style={{marginTop:"15px"}}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -718,7 +725,29 @@ const EditTrip = (props) => {
       </div>
       
         
-
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Edit?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            <h2>Are you sure that you want to edit your trip?</h2>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Link to="/MyRoutes">
+            <Button onClick={handleClose}>No</Button>
+          </Link>
+          <Button onClick={updateFormState} autoFocus>
+            Yes!
+          </Button>
+        </DialogActions>
+      </Dialog>
     
       
       

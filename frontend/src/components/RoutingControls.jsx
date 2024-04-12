@@ -53,6 +53,8 @@ import Tooltip from '@mui/material/Tooltip';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import GeoJsonToGpx from "@dwayneparton/geojson-to-gpx";
 import { DOMImplementation } from '@xmldom/xmldom';
+import DownloadIcon from '@mui/icons-material/Download';
+
 
 const icon = new L.icon({
   iconSize: [25, 41],
@@ -181,7 +183,7 @@ const LeafletRoutingMachine = (props) => {
       }));
 
     };
-console.log(inputFields);
+    console.log(inputFields);
 
     const handleAddFields = () => {
       setInputFields([...inputFields, {id: uuidv4(),  location: '' }])
@@ -214,7 +216,7 @@ console.log(inputFields);
       }
     };
 
-
+    //Function that saves the route to your profile
     const handleSave = async (e) => {
       e.preventDefault();
       try {
@@ -242,7 +244,7 @@ console.log(inputFields);
       }
     };
     
-
+    //Function to convert distance and duration 
     const convertDistance = (distance) => {
      const converted = (distance / 1000).toFixed(2);
      return converted;
@@ -256,7 +258,7 @@ console.log(inputFields);
     };
 
    
-
+    // Function to Geocode text into coordinates
     const handleGeocode = async (loc) => {
         const latlon = await Geolocate(loc);
         const reversed = [latlon[1], latlon[0]];
@@ -269,7 +271,13 @@ console.log(inputFields);
       
     };
     
+    
+    
+    
+    
     console.log("InputFields", inputFields);
+
+    //Function that fetch the weather data 
     const fetchData = async () => {
     try{
       const data = await WeatherApi(coords, value, evalue);
@@ -308,7 +316,7 @@ console.log(inputFields);
     };
 
 
-
+    //Function that generates the First Route
     const getRoute =  async ()=> {
      try{
       const newRoute =  await OpenRoute(map, coords);
@@ -345,9 +353,10 @@ console.log(inputFields);
     }
 
     
-
+    //Function that generates random Round Trip
     const getRoundTrip = async()=>{
       const roundTrip = await RoundTrip(map, coords, length, points, seed);
+      setRoute(roundTrip.coordinates);
       console.log(roundTrip);
       setDisatnce(roundTrip.distance);
       setDuration(roundTrip.duration);
@@ -367,6 +376,9 @@ console.log(inputFields);
       }))
     }
 
+
+
+    //Function that triggers RoundTrip and Weather
     const handleRound = () =>{
       try {
         getRoundTrip();
@@ -381,6 +393,8 @@ console.log(inputFields);
     
     };
 
+
+    // Functiuon that triggers Route and weather
     const handletwofun=()=>{
      try{ 
       getRoute();
@@ -395,6 +409,8 @@ console.log(inputFields);
       throw error;
     }
     }
+
+
 
     const handleDateChange = (newValue) => {
       const formattedDate = newValue ? dayjs(newValue).format('YYYY-MM-DD') : null;
@@ -443,6 +459,8 @@ console.log(inputFields);
       setOpen(false);
     };
     
+
+    //Function to check Weather
     const checkWeather = () =>{
       const allCodec = codec.concat(codec2);
       const count = {};
@@ -479,7 +497,7 @@ console.log(inputFields);
    
 
 
-
+    //Function for Alternative Route
     const  handleDownload= async ()=>{
       const alt = await AlternativesRoutes(map, coords);
       console.log(alt);
@@ -520,14 +538,13 @@ console.log(inputFields);
 
 
     const handleButtonClick = () => {
-      // Execute your function here
       if (isFormValid) {
         getRoundTrip();
         console.log("All fields are filled. Executing the function...");
       }
     };
     
-
+    //Create Gpx file and download it 
     const createXmlString = (segments) => {
       let result = '<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" version="1.1" creator="runtracker"><metadata/><trk><name></name><desc></desc>'
       result += '<trkseg>';
@@ -545,7 +562,7 @@ console.log(inputFields);
         const xml = createXmlString(route);
         const url = 'data:text/json;charset=utf-8,' + xml;
         const link = document.createElement('a');
-        link.download = `klm.gpx`;
+        link.download = `${currentUser.username}.gpx`;
         link.href = url;
         document.body.appendChild(link);
         link.click();
@@ -607,7 +624,7 @@ console.log(inputFields);
         <Button variant="contained" style={{marginTop:"3px"}} onClick={handleButtonClick}
         disabled={!isFormValid}><RefreshIcon/> </Button>
         <Button variant="contained" style={{marginTop:"3px"}} onClick={handleSave}><SaveIcon /></Button>
-        <Button variant="contained" style={{marginTop:"3px"}} onClick={handleGpx}><SaveIcon /></Button>
+        <Button variant="contained" style={{marginTop:"3px"}} onClick={handleGpx}><DownloadIcon/></Button>
         </Stack>
         <Stack spacing={1} style={{marginTop:"15px"}}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
