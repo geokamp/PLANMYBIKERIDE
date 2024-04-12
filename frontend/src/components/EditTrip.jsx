@@ -190,6 +190,8 @@ const EditTrip = (props) => {
       }))
     );
     
+
+    
     setValue(prevValue => {
       const parsedDay = dayjs(startDate, 'YYYY-MM-DD');
       return parsedDay;
@@ -205,6 +207,7 @@ const EditTrip = (props) => {
     setPoints(points);
 
     handleClose();
+    
     
   };
   
