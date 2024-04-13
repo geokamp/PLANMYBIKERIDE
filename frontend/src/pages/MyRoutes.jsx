@@ -79,10 +79,13 @@ export default function MyRoutes() {
               Delete
             </Button>
             <Link to={`/update/${trip._id}`}>
-              <Button variant="contained" sx={{bgcolor:"green"}}>
+              <Button variant="contained" sx={{bgcolor:"green", marginRight:"5px"}}>
                 Edit
               </Button>
             </Link>
+            <Button variant="contained" sx={{bgcolor:"blue"}}>
+                GPX
+            </Button>
            </div>
         </div>
       ))}

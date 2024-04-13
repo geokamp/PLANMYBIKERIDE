@@ -159,7 +159,9 @@ const LeafletRoutingMachine = (props) => {
     const [inputFields, setInputFields] = useState([{id: uuidv4(), location:''}]);
     const [data, setData] = useState();
     const [processedLocations, setProcessedLocations] = useState([]);
-    
+    const [datesSelected, setDatesSelected] = useState(false);
+
+
     const handleSubmit = (e) => {
       e.preventDefault();
       
@@ -396,18 +398,21 @@ const LeafletRoutingMachine = (props) => {
 
     // Functiuon that triggers Route and weather
     const handletwofun=()=>{
-     try{ 
-      getRoute();
-      fetchData();
-      handleToggle();
-      setOpen(true);
-      checkWeather();
-     }catch (error) {
-      // Log the error
-      console.log("An error occurred:", error);
-      // Throw the error again to propagate it up
-      throw error;
-    }
+      if (datesSelected) {
+        try { 
+          getRoute();
+          fetchData();
+          handleToggle();
+          setOpen(true);
+          checkWeather();
+        } catch (error) {
+          console.log("An error occurred:", error);
+          throw error;
+        }
+      } else {
+        // Show an alert or message indicating that both dates need to be selected
+        alert("Please select both start and end dates.");
+      }
     }
 
 
@@ -421,8 +426,13 @@ const LeafletRoutingMachine = (props) => {
         startDate: formattedDate
       }))
       
-
+      if (formattedDate && evalue) {
+        setDatesSelected(true);
+      } else {
+        setDatesSelected(false);
+      }
     };
+    
 
     const handleDateChangeEnd = (newValue) => {   
       const formattedDate = newValue ? dayjs(newValue).format('YYYY-MM-DD') : null;
@@ -432,6 +442,12 @@ const LeafletRoutingMachine = (props) => {
         ...prevData,
         endDate: formattedDate
       }))
+
+      if (value && formattedDate) {
+        setDatesSelected(true);
+      } else {
+        setDatesSelected(false);
+      }
     };
     
     const formattedDays = time.map(value=> {
@@ -621,7 +637,7 @@ const LeafletRoutingMachine = (props) => {
         ))}
         <Stack spacing={1} direction="row">
         
-        <Button variant="contained" style={{marginTop:"3px"}} onClick={handletwofun}><DirectionsIcon /></Button>
+        <Button variant="contained" style={{marginTop:"3px"}} onClick={handletwofun} disabled={!datesSelected}><DirectionsIcon /></Button>
         <Button variant="contained" style={{marginTop:"3px"}} onClick={handleButtonClick}
         disabled={!isFormValid}><RefreshIcon/> </Button>
         <Button variant="contained" style={{marginTop:"3px"}} onClick={handleSave}><SaveIcon /></Button>

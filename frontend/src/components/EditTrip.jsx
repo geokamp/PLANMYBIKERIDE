@@ -207,8 +207,7 @@ const EditTrip = (props) => {
     setPoints(points);
 
     handleClose();
-    
-    
+   
   };
   
 
