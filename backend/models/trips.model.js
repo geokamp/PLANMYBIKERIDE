@@ -28,6 +28,9 @@ const tripsSchema = new mongoose.Schema(
       seed:{
         type : String
       },
+      gpx:{
+        type:[[Number]]
+      },
       userRef: {
         type: String,
         required: true,

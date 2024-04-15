@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { useRef, useState, useEffect } from 'react';
 import Trips from '../../../backend/models/trips.model';
 import Button from '@mui/material/Button';
-import { Link } from 'react-router-dom';
+import { Link} from 'react-router-dom';
 
 
 
@@ -14,7 +14,7 @@ export default function MyRoutes() {
   const { currentUser, loading, error } = useSelector((state) => state.user);
   const [userTrips, setUserTrips] = useState([]);
   const [showtripsError, setShowTripsError] = useState(false);
-
+  
 
 
   const handleShowTrips = async () => {
@@ -52,8 +52,13 @@ export default function MyRoutes() {
     }
   };
 
+
+
+
+
   useEffect(() => {
     handleShowTrips(); // Execute handleShowTrips when component mounts
+    
   }, []); 
 
 
@@ -83,9 +88,7 @@ export default function MyRoutes() {
                 Edit
               </Button>
             </Link>
-            <Button variant="contained" sx={{bgcolor:"blue"}}>
-                GPX
-            </Button>
+            
            </div>
         </div>
       ))}

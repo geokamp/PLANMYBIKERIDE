@@ -51,6 +51,7 @@ import { DateField} from '@mui/x-date-pickers';
 import HelpIcon from '@mui/icons-material/Help';
 import Tooltip from '@mui/material/Tooltip';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import DownloadIcon from '@mui/icons-material/Download';
 
 const icon = new L.icon({
   iconSize: [25, 41],
@@ -72,7 +73,11 @@ const EditTrip = (props) => {
       duration: "",
       distance: "",
       startDate: "",
-      endDate: ""
+      endDate: "",
+      lenght:"",
+      points: "",
+      seed: "",
+      gpx:[]
     });
     const [error, setError] = useState(false);
     const navigate = useNavigate();
@@ -169,18 +174,20 @@ const EditTrip = (props) => {
           console.log(data.message);
           return;
         }
+        
         setFormData(data);
+        
       };
 
       fetchTrip();
     }, [])
       
       
-     console.log(formData);
+     
 
   const updateFormState = () => {
     
-    const { waypoints, startDate, endDate, lenght, seed, points} = formData;
+    const { waypoints, startDate, endDate, lenght, seed, points, gpx} = formData;
   
     // Update inputFields with waypoints
     setInputFields( 
@@ -205,7 +212,7 @@ const EditTrip = (props) => {
     setLength(lenght);
     setSeed(seed);
     setPoints(points);
-
+    setRoute(gpx);
     handleClose();
    
   };
@@ -379,15 +386,26 @@ const EditTrip = (props) => {
       const middleCords =  [newRoute.coordinates[middleIndex]];
       console.log(middleCords);
 
-      
+      const count = Math.max(240, 2);
+      const totalArrays = newRoute.coordinates.length;
+      const step = Math.floor(totalArrays / (count - 1));
+      const selectedArrays = [];
+      selectedArrays.push(newRoute.coordinates[0]);
 
+      for (let i = step; i < totalArrays - 1; i += step) {
+        selectedArrays.push(newRoute.coordinates[i]);
+      }
 
+      selectedArrays.push(newRoute.coordinates[totalArrays - 1]);
+    
       setFormData(prevData => ({
         ...prevData,
         duration: convertDuration(newRoute.duration),
-        distance: convertDistance(newRoute.distance)
+        distance: convertDistance(newRoute.distance),
+        gpx: selectedArrays
       }));
 
+      setRoute(selectedArrays);
 
 
      }catch (error) {
@@ -411,6 +429,17 @@ const EditTrip = (props) => {
       fetchData();
       handleToggle();
 
+      const count = Math.max(240, 2);
+      const totalArrays = roundTrip.coordinates.length;
+      const step = Math.floor(totalArrays / (count - 1));
+      const selectedArrays = [];
+      selectedArrays.push(roundTrip.coordinates[0]);
+
+      for (let i = step; i < totalArrays - 1; i += step) {
+        selectedArrays.push(roundTrip.coordinates[i]);
+      }
+
+      selectedArrays.push(roundTrip.coordinates[totalArrays - 1]);
 
       setFormData(prevData => ({
         ...prevData,
@@ -418,8 +447,11 @@ const EditTrip = (props) => {
         lenght: length,
         seed: seed,
         duration: convertDuration(roundTrip.duration),
-        distance: convertDistance(roundTrip.distance)
+        distance: convertDistance(roundTrip.distance),
+        gpx: selectedArrays
       }))
+
+      setRoute(selectedArrays);
     }
 
     const handleRound = () =>{
@@ -582,7 +614,36 @@ const EditTrip = (props) => {
       }
     };
 
+    const createXmlString = (segments) => {
+      let result = '<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" version="1.1" creator="runtracker"><metadata/><trk><name></name><desc></desc>'
+      result += '<trkseg>';
+      segments.forEach((segment) => {
+        result += `<trkpt lat="${segment[1]}" lon="${segment[0]}"></trkpt>`;
+      });
+      result += '</trkseg>';
+      result += '</trk></gpx>';
+      return result;
+    }
 
+    const downloadGPX = (route)=> {
+      try {
+        console.log(route);
+        const xml = createXmlString(route);
+        const url = 'data:text/json;charset=utf-8,' + xml;
+        const link = document.createElement('a');
+        link.download = `${currentUser.username}.gpx`;
+        link.href = url;
+        document.body.appendChild(link);
+        link.click();
+        } catch (error) {
+          console.error('Error downloading GPX:', error);
+        }
+      }
+    
+  
+      const handleGpx = () => {
+        downloadGPX(route);
+      };
 
     
 
@@ -629,7 +690,7 @@ const EditTrip = (props) => {
         <Button variant="contained" style={{marginTop:"3px"}} onClick={handleButtonClick}
         disabled={!isFormValid}><RefreshIcon/> </Button>
         <Button variant="contained" style={{marginTop:"3px"}} onClick={handleSave}><SaveIcon /></Button>
-        
+        <Button variant="contained" style={{marginTop:"3px"}} onClick={handleGpx}><DownloadIcon/></Button>
         </Stack>
         <Stack spacing={1} style={{marginTop:"15px"}}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>

@@ -78,7 +78,8 @@ const LeafletRoutingMachine = (props) => {
       endDate: "",
       lenght:"",
       points: "",
-      seed: ""
+      seed: "",
+      gpx:[]
     });
     const [error, setError] = useState(false);
     const navigate = useNavigate();
@@ -323,7 +324,7 @@ const LeafletRoutingMachine = (props) => {
      try{
       const newRoute =  await OpenRoute(map, coords);
       console.log(newRoute);
-      setRoute(newRoute.coordinates);
+      
       setDisatnce(newRoute.distance);
       setDuration(newRoute.duration);
       setSteps(newRoute.steps);
@@ -335,15 +336,26 @@ const LeafletRoutingMachine = (props) => {
       const middleCords =  [newRoute.coordinates[middleIndex]];
       console.log(middleCords);
 
-      
+      const count = Math.max(240, 2);
+      const totalArrays = newRoute.coordinates.length;
+      const step = Math.floor(totalArrays / (count - 1));
+      const selectedArrays = [];
+      selectedArrays.push(newRoute.coordinates[0]);
 
+      for (let i = step; i < totalArrays - 1; i += step) {
+        selectedArrays.push(newRoute.coordinates[i]);
+      }
 
+      selectedArrays.push(newRoute.coordinates[totalArrays - 1]);
+    
       setFormData(prevData => ({
         ...prevData,
         duration: convertDuration(newRoute.duration),
-        distance: convertDistance(newRoute.distance)
+        distance: convertDistance(newRoute.distance),
+        gpx: selectedArrays
       }));
 
+      setRoute(selectedArrays);
 
 
      }catch (error) {
@@ -354,11 +366,15 @@ const LeafletRoutingMachine = (props) => {
     }
     }
 
+
+
+    
+
     
     //Function that generates random Round Trip
     const getRoundTrip = async()=>{
       const roundTrip = await RoundTrip(map, coords, length, points, seed);
-      setRoute(roundTrip.coordinates);
+      
       console.log(roundTrip);
       setDisatnce(roundTrip.distance);
       setDuration(roundTrip.duration);
@@ -368,14 +384,29 @@ const LeafletRoutingMachine = (props) => {
       fetchData();
       handleToggle();
 
+      const count = Math.max(240, 2);
+      const totalArrays = roundTrip.coordinates.length;
+      const step = Math.floor(totalArrays / (count - 1));
+      const selectedArrays = [];
+      selectedArrays.push(roundTrip.coordinates[0]);
+
+      for (let i = step; i < totalArrays - 1; i += step) {
+        selectedArrays.push(roundTrip.coordinates[i]);
+      }
+
+      selectedArrays.push(roundTrip.coordinates[totalArrays - 1]);
+
       setFormData(prevData => ({
         ...prevData,
         points: points,
         lenght: length,
         seed: seed,
         duration: convertDuration(roundTrip.duration),
-        distance: convertDistance(roundTrip.distance)
+        distance: convertDistance(roundTrip.distance),
+        gpx: selectedArrays
       }))
+
+      setRoute(selectedArrays);
     }
 
 
