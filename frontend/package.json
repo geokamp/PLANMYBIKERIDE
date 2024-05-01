@@ -23,6 +23,7 @@
     "@xmldom/xmldom": "^0.8.10",
     "axios": "^1.6.8",
     "dayjs": "^1.11.10",
+    "dotenv": "^16.4.5",
     "firebase": "^10.8.0",
     "leaflet": "^1.9.4",
     "moment": "^2.30.1",

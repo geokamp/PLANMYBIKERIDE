@@ -5,9 +5,10 @@ import L, { polyline } from "leaflet";
 
 export default async function AlternativesRoutes(map, coords){
 
+  const apiKey = import.meta.env.VITE_MAPBOX;
     console.log(coords);
 try{
-    let URL = "https://api.mapbox.com/directions/v5/mapbox/driving/";
+    let URL = `https://api.mapbox.com/directions/v5/mapbox/driving/`;
 
     if (coords.length >= 2) {
       URL += coords.slice(0, 2).map(coord => coord.join(',')).join(';');
@@ -18,7 +19,7 @@ try{
       URL += coords.map(coord => coord.join(',')).join(';');
     }
 
-    URL += "?alternatives=true&exclude=motorway&geometries=geojson&language=gr&overview=full&steps=true&access_token=pk.eyJ1IjoiZ2Vva2FtcDk4IiwiYSI6ImNscGk4NWowajA3dGUycXJ2OHN0eWZpamIifQ.Ebg7_CPl9D4OoUcKpl4iLg";
+    URL += `?alternatives=true&exclude=motorway&geometries=geojson&language=gr&overview=full&steps=true&access_token=${apiKey}`;
     
     const data = await fetch(URL)
         .then((res)=> res.json())

@@ -64,7 +64,7 @@ export default function MyRoutes() {
 
 
   return (
-    <div style={{ position: "absolute", left: "20%", top: "10%" }}>
+    <div style={{ position: "absolute", left: "20%", top: "10%"}}>
     <h1>My Routes</h1>
     
     {userTrips &&

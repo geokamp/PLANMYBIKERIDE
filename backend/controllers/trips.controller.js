@@ -1,6 +1,6 @@
 import Trips from "../models/trips.model.js";
 import { errorHandler } from '../utils/error.js';
-
+import axios from 'axios';
 
 export const createTrip = async (req, res, next) => {
     try {
@@ -67,6 +67,9 @@ export const createTrip = async (req, res, next) => {
       next(error);
     }
   };
+
+
+  
 
 
 

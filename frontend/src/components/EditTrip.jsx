@@ -115,6 +115,7 @@ const EditTrip = (props) => {
     const [value, setValue] = useState(null);
     const [evalue, setEValue] = useState(null);
     const [open, setOpen] = useState(true);
+    const [open2, setOpen2] = useState(true);
     const images={
       0:'../../public/photos/sun.png',
       1:'../../public/photos/clear-sky.png',
@@ -156,10 +157,10 @@ const EditTrip = (props) => {
     const [isFinished, setIsFinished] = useState(false);
     const [currentDistance, setCurrentDistance] = useState([])
     const [inputFields, setInputFields] = useState([{id: uuidv4(), location:''}]);
-
     const [processedLocations, setProcessedLocations] = useState([]);
-  
- 
+    const [middleWind, setMiddleWind] = useState([]);
+    const [middleRain, setMiddleRain] = useState([]);
+    const [middleVisib, setMiddleVisb] = useState([]);
     
     
  
@@ -196,6 +197,8 @@ const EditTrip = (props) => {
         location: waypoint
       }))
     );
+    
+    
     
 
     
@@ -326,11 +329,11 @@ const EditTrip = (props) => {
         setStarterMarker([...starterMarker, myMarker]);
         const markerPos = myMarker.getLatLng();
         map.setView(markerPos, map.getZoom());
-        return reversed;
-      
+        return latlon;
+
     };
     
-    console.log("InputFields", inputFields);
+
     const fetchData = async () => {
     try{
       const data = await WeatherApi(coords, value, evalue);
@@ -374,7 +377,6 @@ const EditTrip = (props) => {
      try{
       const newRoute =  await OpenRoute(map, coords);
       console.log(newRoute);
-      setRoute(newRoute.coordinates);
       setDisatnce(newRoute.distance);
       setDuration(newRoute.duration);
       setSteps(newRoute.steps);
@@ -384,8 +386,11 @@ const EditTrip = (props) => {
 
       const middleIndex = Math.floor(newRoute.coordinates.length/2);
       const middleCords =  [newRoute.coordinates[middleIndex]];
-      console.log(middleCords);
-
+      const middleWeather = await WeatherApi(middleCords, value, evalue);
+      setMiddleRain(middleWeather.rain);
+      setMiddleVisb(middleWeather.visibility);
+      setMiddleWind(middleWeather.wind_speed);
+      console.log(middleWeather);
       const count = Math.max(240, 2);
       const totalArrays = newRoute.coordinates.length;
       const step = Math.floor(totalArrays / (count - 1));
@@ -473,7 +478,7 @@ const EditTrip = (props) => {
       getRoute();
       fetchData();
       handleToggle();
-      setOpen(true);
+      setOpen2(true);
       checkWeather();
      }catch (error) {
       // Log the error
@@ -567,13 +572,34 @@ const EditTrip = (props) => {
 
 
 
-    const  handleDownload= async ()=>{
+    const  handleSecondRoute= async ()=>{
       const alt = await AlternativesRoutes(map, coords);
       console.log(alt);
       setRoute(alt.coordinates);
       setDisatnce(alt.distance);
       setDuration(alt.duration);
       setSteps(alt.steps);
+
+      const count = Math.max(240, 2);
+      const totalArrays = alt.coordinates.length;
+      const step = Math.floor(totalArrays / (count - 1));
+      const selectedArrays = [];
+      selectedArrays.push(alt.coordinates[0]);
+
+      for (let i = step; i < totalArrays - 1; i += step) {
+        selectedArrays.push(alt.coordinates[i]);
+      }
+
+      selectedArrays.push(alt.coordinates[totalArrays - 1]);
+    
+      setFormData(prevData => ({
+        ...prevData,
+        duration: convertDuration(alt.duration),
+        distance: convertDistance(alt.distance),
+        gpx: selectedArrays
+      }));
+
+      setRoute(selectedArrays);
     };
     
 

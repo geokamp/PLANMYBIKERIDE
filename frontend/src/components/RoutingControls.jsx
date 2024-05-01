@@ -1,5 +1,5 @@
 import React, { useEffect, useState} from "react";
-import L from "leaflet";
+import L, {polyline} from "leaflet";
 import { useMap} from "react-leaflet";
 import TextField from '@mui/material/TextField';
 import Geolocate from "../functions/Geolocate";
@@ -54,6 +54,10 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import GeoJsonToGpx from "@dwayneparton/geojson-to-gpx";
 import { DOMImplementation } from '@xmldom/xmldom';
 import DownloadIcon from '@mui/icons-material/Download';
+import { mapsSelector } from "../functions/MapSelector";
+import NavigationIcon from '@mui/icons-material/Navigation';
+import WbSunnyIcon from '@mui/icons-material/WbSunny';
+import axios from "axios";
 
 
 const icon = new L.icon({
@@ -161,8 +165,17 @@ const LeafletRoutingMachine = (props) => {
     const [data, setData] = useState();
     const [processedLocations, setProcessedLocations] = useState([]);
     const [datesSelected, setDatesSelected] = useState(false);
+    const [middleWind, setMiddleWind] = useState([]);
+    const [middleRain, setMiddleRain] = useState([]);
+    const [middleVisib, setMiddleVisb] = useState([]);
+    const [middleStartWind, setMiddleStartWind] = useState([]);
+    const [middleStartRain, setMiddleStartRain] = useState([]);
+    const [middleStartVisib, setMiddleStartVisib] = useState([]);
+    const [middleEndWind, setMiddleEndWind] = useState([]);
+    const [middleEndRain, setMiddleEndRain] = useState([]);
+    const [middleEndVisib, setMiddleEndVisib] = useState([]);
 
-
+    
     const handleSubmit = (e) => {
       e.preventDefault();
       
@@ -200,6 +213,7 @@ const LeafletRoutingMachine = (props) => {
       setInputFields(values);
       
       
+      
     };
 
     const handleAll=(id, e)=>{
@@ -208,7 +222,7 @@ const LeafletRoutingMachine = (props) => {
     };
     
 
-    
+    console.log(markers);
       
     
 
@@ -277,7 +291,7 @@ const LeafletRoutingMachine = (props) => {
     
     
     
-    
+    console.log(coords);
     console.log("InputFields", inputFields);
 
     //Function that fetch the weather data 
@@ -331,11 +345,32 @@ const LeafletRoutingMachine = (props) => {
       setCurrentDistance(newRoute.currentDistance);
       
 
-
+      //Middle coords for weather
       const middleIndex = Math.floor(newRoute.coordinates.length/2);
       const middleCords =  [newRoute.coordinates[middleIndex]];
-      console.log(middleCords);
 
+      const middleStartIndex = Math.floor(middleIndex / 2);
+      const middleStartCoords = [newRoute.coordinates[middleStartIndex]];
+
+
+      const middleEndIndex = Math.floor((middleIndex + newRoute.coordinates.length) / 2);
+      const middleEndCoords = [newRoute.coordinates[middleEndIndex]];
+
+      const middleWaypoints = middleStartCoords.concat(middleCords, middleEndCoords);
+
+      const middleWeather = await WeatherApi(middleWaypoints, value, evalue);
+      setMiddleStartRain(middleWeather[0].rain);
+      setMiddleStartWind(middleWeather[0].wind_speed);
+      setMiddleStartVisib(middleWeather[0].visibility);
+      setMiddleRain(middleWeather[1].rain);
+      setMiddleVisb(middleWeather[1].visibility);
+      setMiddleWind(middleWeather[1].wind_speed);
+      setMiddleEndRain(middleWeather[2].rain);
+      setMiddleEndWind(middleWeather[2].wind_speed);
+      setMiddleEndVisib(middleWeather[2].visibility);
+      
+      
+      //Reduce waypoints to 240 for teh GPX
       const count = Math.max(240, 2);
       const totalArrays = newRoute.coordinates.length;
       const step = Math.floor(totalArrays / (count - 1));
@@ -413,6 +448,7 @@ const LeafletRoutingMachine = (props) => {
 
     //Function that triggers RoundTrip and Weather
     const handleRound = () =>{
+      if (datesSelected) {
       try {
         getRoundTrip();
         fetchData();
@@ -422,9 +458,13 @@ const LeafletRoutingMachine = (props) => {
         console.log("An error occurred:", error);
         // Throw the error again to propagate it up
         throw error;
+      }} else {
+        // Show an alert or message indicating that both dates need to be selected
+        alert("Please select both start and end dates.");
       }
+    }
     
-    };
+   
 
 
     // Functiuon that triggers Route and weather
@@ -435,7 +475,6 @@ const LeafletRoutingMachine = (props) => {
           fetchData();
           handleToggle();
           setOpen(true);
-          checkWeather();
         } catch (error) {
           console.log("An error occurred:", error);
           throw error;
@@ -507,52 +546,46 @@ const LeafletRoutingMachine = (props) => {
     };
     
 
-    //Function to check Weather
-    const checkWeather = () =>{
-      const allCodec = codec.concat(codec2);
-      const count = {};
-      allCodec.forEach(num =>{
-        count[num] = (count[num] || 0)
-      });
-
-      let mostFrequentNumber;
-      let highestCount = 0;
-      for (const num in count) {
-          if (count[num] > highestCount) {
-              highestCount = count[num];
-              mostFrequentNumber = num;
-          }
-        }
-
-      if(mostFrequentNumber == 0){
-        return "Your Trip will be Sunny! Do you want another Route?"
-      }
-      else if(mostFrequentNumber == 1 || 2 || 3){
-        return "Your Route will be Clear Skies! Do you want another Route?"
-      }
-      else if(mostFrequentNumber == 56 || 57 || 61 || 63 || 65 || 66 || 67){
-        return "Your Route will be Rainy! Do you want another Route?"
-      }
-
-
-    }
-
-    
- 
     
 
     
-   
+
+    
+
 
 
     //Function for Alternative Route
     const  handleDownload= async ()=>{
       const alt = await AlternativesRoutes(map, coords);
       console.log(alt);
-      setRoute(alt.coordinates);
       setDisatnce(alt.distance);
       setDuration(alt.duration);
       setSteps(alt.steps);
+      
+      const middleIndex = Math.floor(alt.coordinates.length/2);
+      const middleCords =  [alt.coordinates[middleIndex]];
+     
+      
+      const count = Math.max(240, 2);
+      const totalArrays = alt.coordinates.length;
+      const step = Math.floor(totalArrays / (count - 1));
+      const selectedArrays = [];
+      selectedArrays.push(alt.coordinates[0]);
+
+      for (let i = step; i < totalArrays - 1; i += step) {
+        selectedArrays.push(alt.coordinates[i]);
+      }
+
+      selectedArrays.push(alt.coordinates[totalArrays - 1]);
+    
+      setFormData(prevData => ({
+        ...prevData,
+        duration: convertDuration(alt.duration),
+        distance: convertDistance(alt.distance),
+        gpx: selectedArrays
+      }));
+
+      setRoute(selectedArrays);
     };
     
 
@@ -624,11 +657,65 @@ const LeafletRoutingMachine = (props) => {
         downloadGPX(route);
       };
 
+      const evaluateRoute = () => {
+        
+        const rainLevels = rain.concat(rain2, middleRain, middleStartRain, middleEndRain);
+        const windLevels= windspeed.concat(windspeed2, middleWind, middleStartWind, middleEndWind);
+        const visibilityLevels = visib.concat(visib2, middleVisib, middleStartVisib, middleEndVisib);
+
+        const combinedRain= [
+          ...rainLevels.slice(0, -1)];
+        const combinedWind= [
+          ...windLevels.slice(0, -1)];
+        const combinedVisib= [ ...visibilityLevels.slice(0, -1)];
+        
+        const rainWeight = 5;
+        const windWeight = 0.3;
+        const visibilityWeight = 1000 ;
+
+        const averageRainRating = calculateAverageRating(rainLevels);
+        const averageWindRating = calculateMax(windLevels);
+        const averageVisibilityRating = calculateAverageRating(visibilityLevels);
+          console.log(averageVisibilityRating);
+        if (averageRainRating < rainWeight && 
+          averageWindRating < 8 && 
+          averageVisibilityRating > 2000) {
+        return "Highly Suitable";
+      } else if (0.5 < averageRainRating < rainWeight && 
+                 20 < averageWindRating < windWeight && 
+                 2000 > averageVisibilityRating > visibilityWeight) {
+        return "Moderately Suitable";
+      } else {
+        return "Not Suitable";
+      }
+        
+      }
+
+      // Function to calculate the average of an array of values
+      const calculateAverageRating = (data) => {
+        if (data.length === 0) return 0;
+        const sum = data.reduce((total, rating) => total + rating, 0);
+        return sum / data.length;
+      };
+      
+      // Function to calculate the maximum value in an array
+      const calculateMax = (values) => {
+          return Math.max(...values);
+      }
+
+      const handleMapSelector=()=>{
+        mapsSelector(coords, route);
+      }
+
+      const handleRouteData=()=>{
+        fetchRouteData(coords);
+      }
+      
 
     return(
 
       <>  
-      <div style={ {position: "absolute", zIndex: '1000',top:"10px", right:"10px", padding: "5px", width:"350px", height:"500px", overflow: 'auto', borderRadius:"10px", marginBottom:'5px'} }>
+      <Box sx={ {position: "absolute", zIndex: '1000',top:"10px", right:"10px", padding: "5px", width:"350px", height:"500px", overflow: 'auto', borderRadius:"10px", marginBottom:'5px', WebkitOverflowScrolling: "touch"} }>
       <Accordion> 
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
@@ -668,11 +755,11 @@ const LeafletRoutingMachine = (props) => {
         ))}
         <Stack spacing={1} direction="row">
         
-        <Button variant="contained" style={{marginTop:"3px"}} onClick={handletwofun} disabled={!datesSelected}><DirectionsIcon /></Button>
-        <Button variant="contained" style={{marginTop:"3px"}} onClick={handleButtonClick}
+        <Button variant="contained" size="small" style={{marginTop:"3px"}} onClick={handletwofun} disabled={!datesSelected}><DirectionsIcon /></Button>
+        <Button variant="contained" size="small" style={{marginTop:"3px"}} onClick={handleButtonClick}
         disabled={!isFormValid}><RefreshIcon/> </Button>
-        <Button variant="contained" style={{marginTop:"3px"}} onClick={handleSave}><SaveIcon /></Button>
-        <Button variant="contained" style={{marginTop:"3px"}} onClick={handleGpx}><DownloadIcon/></Button>
+        <Button variant="contained" size="small" style={{marginTop:"3px"}} onClick={handleSave}><SaveIcon /></Button>
+        <Button variant="contained" size="small" style={{marginTop:"3px"}} onClick={handleGpx}><DownloadIcon/></Button>
         </Stack>
         <Stack spacing={1} style={{marginTop:"15px"}}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -693,6 +780,8 @@ const LeafletRoutingMachine = (props) => {
           />
         </LocalizationProvider>
         </Stack>
+        <Button variant="contained" size="small" style={{marginTop:"3px"}} onClick={handleMapSelector}><NavigationIcon/></Button>
+        
         <Accordion sx={{marginTop:"10px", borderRadius:"10px"}}> 
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
@@ -767,22 +856,31 @@ const LeafletRoutingMachine = (props) => {
         </ol>
       </AccordionDetails>
       </Accordion>  
-      </div>
-      <div style={{position: "absolute",
+      </Box>
+
+
+      <Box sx={{position: "absolute",
                     zIndex: "1000",
-                    top:"10px",
+                    top:{xs:"550px", sm:"10px", md:"10px"},
                     left:"10px", 
                     padding:"5px",
-                    width:"400px",
-                    height:"300px",
+                    width: expanded ? "400px" : "70px", 
+                    height: expanded ? "300px" : "70px",
                     overflow: "auto",
-                    borderRadius:"10px"}}>
+                    borderRadius:"10px",
+                    WebkitOverflowScrolling: "touch"
+                    }}>
       <Accordion expanded={expanded}>  
        <AccordionSummary
+       
           aria-controls="panel1-content"
           id="panel1-header"
         >
-          <h1>Weather</h1>
+           {expanded ? (
+                <h1><WbSunnyIcon /></h1>
+            ) : (
+                <WbSunnyIcon/>
+            )}
         </AccordionSummary>
      <AccordionDetails >
           <div>
@@ -821,7 +919,7 @@ const LeafletRoutingMachine = (props) => {
       
       </AccordionDetails>
       </Accordion>
-      </div>
+      </Box>
         
 
     
@@ -838,7 +936,7 @@ const LeafletRoutingMachine = (props) => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            {checkWeather()};
+            {evaluateRoute()};
           </DialogContentText>
         </DialogContent>
         <DialogActions>

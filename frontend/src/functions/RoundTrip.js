@@ -5,7 +5,7 @@ import React, {useState} from "react";
 
 export default async function RoundTrip(map, coords, length, points, seed){
 
-    const apiKey ="5b3ce3597851110001cf62484b6b5cdd3e324e45800d330a5218dccc";
+    const apiKey = import.meta.env.VITE_ORS;
     
     //console.log(start);
   

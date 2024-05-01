@@ -6,7 +6,7 @@ import React, {useState} from "react";
 export default async function OpenRoute(map, coords){
   console.log(coords);
 
-  
+  const apiKey = import.meta.env.VITE_MAPBOX;
 
 try{
   
@@ -21,7 +21,7 @@ try{
       URL += coords.map(coord => coord.join(',')).join(';');
     }
 
-    URL += "?alternatives=true&exclude=motorway&geometries=geojson&language=gr&overview=full&steps=true&access_token=pk.eyJ1IjoiZ2Vva2FtcDk4IiwiYSI6ImNscGk4NWowajA3dGUycXJ2OHN0eWZpamIifQ.Ebg7_CPl9D4OoUcKpl4iLg";
+    URL += `?alternatives=true&exclude=motorway&geometries=geojson&language=gr&overview=full&steps=true&access_token=${apiKey}`;
 
 
   const data = await fetch(URL)
@@ -39,7 +39,6 @@ try{
           duration: 0,
           steps:[],
           currentDistance: [],
-          rawData: data 
         };
 
         if( route.geometry && Array.isArray(route.geometry.coordinates)){

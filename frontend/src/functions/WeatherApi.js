@@ -1,10 +1,10 @@
 export default async function WeatherApi(start, stDate, enDate){
 
-    console.log(start);
+    
     const lat = start.map(lats => lats[1]);
     const lon = start.map(lons => lons[0]);
 
-    
+  
  try{  
     const URL = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,rain,weather_code,visibility,wind_speed_10m,wind_direction_10m&timezone=auto&start_date=${stDate}&end_date=${enDate}`;
     const data = await fetch(URL)
