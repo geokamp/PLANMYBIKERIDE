@@ -58,7 +58,7 @@ import { mapsSelector } from "../functions/MapSelector";
 import NavigationIcon from '@mui/icons-material/Navigation';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import axios from "axios";
-
+import EvaluateRoute from "../functions/EvaluateRoute";
 
 const icon = new L.icon({
   iconSize: [25, 41],
@@ -175,6 +175,16 @@ const LeafletRoutingMachine = (props) => {
     const [middleEndRain, setMiddleEndRain] = useState([]);
     const [middleEndVisib, setMiddleEndVisib] = useState([]);
 
+    const [middleAltWind, setMiddleAltWind] = useState([]);
+    const [middleAltRain, setMiddleAltRain] = useState([]);
+    const [middleAltVisib, setMiddleAltVisb] = useState([]);
+    const [middleAltStartWind, setMiddleAltStartWind] = useState([]);
+    const [middleAltStartRain, setMiddleAltStartRain] = useState([]);
+    const [middleAltStartVisib, setMiddleAltStartVisib] = useState([]);
+    const [middleAltEndWind, setMiddleAltEndWind] = useState([]);
+    const [middleAltEndRain, setMiddleAltEndRain] = useState([]);
+    const [middleAltEndVisib, setMiddleAltEndVisib] = useState([]);
+    const [formSubmitted, setFormSubmitted] = useState(false);
     
     const handleSubmit = (e) => {
       e.preventDefault();
@@ -419,6 +429,7 @@ const LeafletRoutingMachine = (props) => {
       fetchData();
       handleToggle();
 
+      //Reduce waypoints to 240 for teh GPX
       const count = Math.max(240, 2);
       const totalArrays = roundTrip.coordinates.length;
       const step = Math.floor(totalArrays / (count - 1));
@@ -467,23 +478,6 @@ const LeafletRoutingMachine = (props) => {
    
 
 
-    // Functiuon that triggers Route and weather
-    const handletwofun=()=>{
-      if (datesSelected) {
-        try { 
-          getRoute();
-          fetchData();
-          handleToggle();
-          setOpen(true);
-        } catch (error) {
-          console.log("An error occurred:", error);
-          throw error;
-        }
-      } else {
-        // Show an alert or message indicating that both dates need to be selected
-        alert("Please select both start and end dates.");
-      }
-    }
 
 
 
@@ -555,17 +549,40 @@ const LeafletRoutingMachine = (props) => {
 
 
     //Function for Alternative Route
-    const  handleDownload= async ()=>{
+    const  handleAlternative= async ()=>{
       const alt = await AlternativesRoutes(map, coords);
       console.log(alt);
       setDisatnce(alt.distance);
       setDuration(alt.duration);
       setSteps(alt.steps);
       
-      const middleIndex = Math.floor(alt.coordinates.length/2);
-      const middleCords =  [alt.coordinates[middleIndex]];
-     
       
+     //Middle coords for weather
+     const middleIndex = Math.floor(alt.coordinates.length/2);
+     const middleCords =  [alt.coordinates[middleIndex]];
+
+     const middleStartIndex = Math.floor(middleIndex / 2);
+     const middleStartCoords = [alt.coordinates[middleStartIndex]];
+
+
+     const middleEndIndex = Math.floor((middleIndex + alt.coordinates.length) / 2);
+     const middleEndCoords = [alt.coordinates[middleEndIndex]];
+
+     const middleWaypoints = middleStartCoords.concat(middleCords, middleEndCoords);
+
+     const middleWeather = await WeatherApi(middleWaypoints, value, evalue);
+     setMiddleAltStartRain(middleWeather[0].rain);
+     setMiddleAltStartWind(middleWeather[0].wind_speed);
+     setMiddleAltStartVisib(middleWeather[0].visibility);
+     setMiddleAltRain(middleWeather[1].rain);
+     setMiddleAltVisb(middleWeather[1].visibility);
+     setMiddleAltWind(middleWeather[1].wind_speed);
+     setMiddleAltEndRain(middleWeather[2].rain);
+     setMiddleAltEndWind(middleWeather[2].wind_speed);
+     setMiddleAltEndVisib(middleWeather[2].visibility);
+      
+      
+      //Reduce waypoints to 240 for teh GPX
       const count = Math.max(240, 2);
       const totalArrays = alt.coordinates.length;
       const step = Math.floor(totalArrays / (count - 1));
@@ -657,50 +674,20 @@ const LeafletRoutingMachine = (props) => {
         downloadGPX(route);
       };
 
-      const evaluateRoute = () => {
-        
-        const rainLevels = rain.concat(rain2, middleRain, middleStartRain, middleEndRain);
-        const windLevels= windspeed.concat(windspeed2, middleWind, middleStartWind, middleEndWind);
-        const visibilityLevels = visib.concat(visib2, middleVisib, middleStartVisib, middleEndVisib);
 
-        const combinedRain= [
-          ...rainLevels.slice(0, -1)];
-        const combinedWind= [
-          ...windLevels.slice(0, -1)];
-        const combinedVisib= [ ...visibilityLevels.slice(0, -1)];
-        
-        const rainWeight = 5;
-        const windWeight = 0.3;
-        const visibilityWeight = 1000 ;
-
-        const averageRainRating = calculateAverageRating(rainLevels);
-        const averageWindRating = calculateMax(windLevels);
-        const averageVisibilityRating = calculateAverageRating(visibilityLevels);
-          console.log(averageVisibilityRating);
-        if (averageRainRating < rainWeight && 
-          averageWindRating < 8 && 
-          averageVisibilityRating > 2000) {
-        return "Highly Suitable";
-      } else if (0.5 < averageRainRating < rainWeight && 
-                 20 < averageWindRating < windWeight && 
-                 2000 > averageVisibilityRating > visibilityWeight) {
-        return "Moderately Suitable";
-      } else {
-        return "Not Suitable";
-      }
-        
-      }
-
-      // Function to calculate the average of an array of values
-      const calculateAverageRating = (data) => {
-        if (data.length === 0) return 0;
-        const sum = data.reduce((total, rating) => total + rating, 0);
-        return sum / data.length;
-      };
       
-      // Function to calculate the maximum value in an array
-      const calculateMax = (values) => {
-          return Math.max(...values);
+
+      const handleEvaluate =() =>{
+        const points = EvaluateRoute(rain, rain2, middleRain, middleStartRain, middleEndRain, windspeed, windspeed2, middleWind, middleStartWind, middleEndWind, visib, visib2, middleVisib, middleStartVisib, middleEndVisib);
+        return points;
+      }
+
+      const handleEvaluateSecond =() =>{
+        const points = EvaluateRoute(rain, rain2, middleAltRain, middleAltStartRain, middleAltEndRain, windspeed, windspeed2, middleAltWind, middleAltStartWind, middleAltEndWind, visib, visib2, middleAltVisib, middleAltStartVisib, middleAltEndVisib);
+        console.log(middleAltEndWind);
+        return points;
+        
+        
       }
 
       const handleMapSelector=()=>{
@@ -710,6 +697,27 @@ const LeafletRoutingMachine = (props) => {
       const handleRouteData=()=>{
         fetchRouteData(coords);
       }
+
+      
+    // Functiuon that triggers Route and weather
+    const handletwofun=()=>{
+      if (datesSelected) {
+        try { 
+          getRoute();
+          handleAlternative();
+          fetchData();
+          handleToggle();
+          setOpen(true);
+          setFormSubmitted(true);
+        } catch (error) {
+          console.log("An error occurred:", error);
+          throw error;
+        }
+      } else {
+        // Show an alert or message indicating that both dates need to be selected
+        alert("Please select both start and end dates.");
+      }
+    }
       
 
     return(
@@ -857,7 +865,12 @@ const LeafletRoutingMachine = (props) => {
       </AccordionDetails>
       </Accordion>  
       </Box>
-
+      <Box sx={{zIndex:"1000", position: "absolute", left:"40%", top: "5px"}}>
+        <Button sx={{bgcolor:"blue"}} onClick={getRoute} disabled={!formSubmitted}>First Route</Button>
+        <Button sx={{bgcolor:"red", left:"5px"}} onClick={handleAlternative} disabled={!formSubmitted}>
+            Second Route
+        </Button>
+      </Box>
 
       <Box sx={{position: "absolute",
                     zIndex: "1000",
@@ -891,7 +904,7 @@ const LeafletRoutingMachine = (props) => {
                 <div>{formattedDays[index]}</div>
                 <div>{tem}°C</div>
                 <div>{formattedCode[index]}</div>
-                <div>Visibility: {visib[index]}m</div>
+                <div>Visibility: {visib[index]/1000}km</div>
                 <div>Wind Speed: {windspeed[index]}</div>
                 <div>Wind Dir: {winddirection[index]}</div>
                 <div>Rain: {rain[index]}mm</div>
@@ -907,7 +920,7 @@ const LeafletRoutingMachine = (props) => {
                     <div>{formattedDays[index2]}</div>
                     <div>{tem2}°C</div>
                     <div>{formattedCodeSec[index2]}</div>
-                    <div>Visibility:{visib2[index2]}m</div>
+                    <div>Visibility:{visib2[index2]/1000}km</div>
                     <div>Wind Speed: {windspeed2[index2]}</div>
                     <div>Wind Dir: {winddirection2[index2]}</div>
                     <div>Rain: {rain2[index2]}mm</div>
@@ -936,13 +949,18 @@ const LeafletRoutingMachine = (props) => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            {evaluateRoute()};
+          <h4>Your first route has gather:</h4>
+            {handleEvaluate()}
+          <h4>points</h4>
+          <h4>Your Second route has gather:</h4>
+            {handleEvaluateSecond()}
+          <h4>points</h4>
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>No</Button>
-          <Button onClick={handleDownload} autoFocus>
-            Yes!
+          <Button sx={{bgcolor:"blue"}} onClick={getRoute}>First Route</Button>
+          <Button sx={{bgcolor:"red"}} onClick={handleAlternative} autoFocus>
+            Second Route
           </Button>
         </DialogActions>
       </Dialog>

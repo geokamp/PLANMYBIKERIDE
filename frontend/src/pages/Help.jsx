@@ -56,7 +56,7 @@ export default function Help() {
                <br />
              </h1>
              <p className="info-text">
-             Here you can get a round trip up to 100km distance, you have to add the date, the length, the points and the seed for yo trip before press the round button
+             Here you can get a round trip up to 100km distance, you have to add the date, the length, the points and the seed for your trip before press the round button
              </p>
            </div>
            <div className="grid-item-2">
