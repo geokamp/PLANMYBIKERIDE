@@ -34,7 +34,9 @@ export default function Home(props) {
                   Get Started <i className="ri-arrow-right-line"></i>
                 </button>
                </Link>
+               <Link to="/HELP">
                <button className="btn documentation_btn">documentation</button>
+               </Link>
              </div>) : (<div className="btn_wrapper">
               <Link to="/SignUp">
                 <button className="btn view_more_btn">

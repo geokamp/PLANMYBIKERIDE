@@ -42,8 +42,8 @@ export default function EvaluateRoute(rain, rain2, middleRain, middleStartRain, 
       
         const windRanges = [
           { min: 39, max: 100, points: 0 },   
-          { min: 26, max: 38, points: 1 },   
-          { min: 0, max: 25, points: 2 }   
+          { min: 15, max: 38, points: 1 },   
+          { min: 0, max: 15, points: 2 }   
         ];
       
         const visibilityRanges = [
@@ -53,7 +53,7 @@ export default function EvaluateRoute(rain, rain2, middleRain, middleStartRain, 
         ];
 
         const averageRainRating = calculateAverageRating(rainLevels);
-        const averageWindRating = calculateAverageRating(windLevels);
+        const averageWindRating = calculateMax(windLevels);
         const averageVisibilityRating = calculateAverageRating(visibilityLevels);
           
 

@@ -951,10 +951,10 @@ const LeafletRoutingMachine = (props) => {
           <DialogContentText id="alert-dialog-description">
           <h4>Your first route has gather:</h4>
             {handleEvaluate()}
-          <h4>points</h4>
+          <h4>score</h4>
           <h4>Your Second route has gather:</h4>
             {handleEvaluateSecond()}
-          <h4>points</h4>
+          <h4>score</h4>
           </DialogContentText>
         </DialogContent>
         <DialogActions>
