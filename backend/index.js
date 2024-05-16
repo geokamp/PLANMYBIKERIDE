@@ -30,7 +30,7 @@ app.use('/backend/user', userRouter );
 app.use('/backend/auth', authRouter );
 app.use('/backend/trips', tripRouter);
 
-app.use(express.static(path.join(__dirname, '/client/dist')));
+app.use(express.static(path.join(__dirname, '/frontend/dist')));
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend', 'dist', 'index.html'));
