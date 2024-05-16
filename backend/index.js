@@ -5,6 +5,7 @@ import userRouter from './routes/user.route.js';
 import authRouter from './routes/auth.route.js';
 import tripRouter from "./routes/trips.route.js"
 import cookieParser from 'cookie-parser';
+import path from 'path';
 dotenv.config();
 
 mongoose.connect(process.env.MONGO).then(()=> {
@@ -13,7 +14,7 @@ mongoose.connect(process.env.MONGO).then(()=> {
     console.log(err);
 })
 
-
+const __dirname = path.resolve();
 
 const app = express();
 
@@ -28,6 +29,12 @@ app.use(cookieParser());
 app.use('/backend/user', userRouter );
 app.use('/backend/auth', authRouter );
 app.use('/backend/trips', tripRouter);
+
+app.use(express.static(path.join(__dirname, '/client/dist')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
+})
 
 
 app.use((err, req, res, next)=>{
